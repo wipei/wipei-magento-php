@@ -1,0 +1,12 @@
+{
+  "name": "wipei/wipeipayment",
+  "description": "An example module to demonstrate how to add a payment method in Magento 2.",
+  "type": "magento2-module",
+  "version": "2.2.0",
+  "autoload": {
+    "files": [ "registration.php" ],
+    "psr-4": {
+      "Wipei\\WipeiPayment\\": ""
+    }
+  }
+}
