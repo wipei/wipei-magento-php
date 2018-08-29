@@ -436,7 +436,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
 
         $api = $this->_helperData->getApiInstance($client_id, $client_secret);
 
-        return $api->get("/order/" . "?order=" . $payment_id);
+        return $api->get("/order" . "?order=" . $payment_id);
     }
 
     /**

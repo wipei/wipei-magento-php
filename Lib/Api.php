@@ -91,19 +91,6 @@ class Api {
     }
 
     /**
-     * Get information for specific authorized payment
-     * @param $id
-     * @return array(json)
-     * @throws
-     */
-    public function get_authorized_payment($id) {
-        $access_token = $this->get_access_token();
-
-        $authorized_payment_info = \Wipei\WipeiPayment\Lib\RestClient::get("/authorized_payments/" . $id . "?access_token=" . $access_token);
-        return $authorized_payment_info;
-    }
-
-    /**
      * Create a checkout preference
      * @param array $preference
      * @return array(json)
@@ -112,22 +99,8 @@ class Api {
     public function create_preference($preference) {
         $access_token = $this->get_access_token();
 
-        $extra_params =  array('platform: ' . $this->_platform, 'so;', 'type: ' .  $this->_type);
-        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::post("/order?access_token=" . $access_token, $preference, "application/json", $extra_params);
-        return $preference_result;
-    }
-
-    /**
-     * Update a checkout preference
-     * @param string $id
-     * @param array $preference
-     * @return
-     * @throws
-     */
-    public function update_preference($id, $preference) {
-        $access_token = $this->get_access_token();
-
-        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::put("/preferences/?id=" . $id . "&access_token=" . $access_token, $preference);
+        $extra_params =  array('platform: ' . $this->_platform, 'so;', 'type: ' .  $this->_type, 'Authorization: ' . $access_token);
+        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::post("/order", $preference, "application/json", $extra_params);
         return $preference_result;
     }
 
@@ -140,7 +113,8 @@ class Api {
     public function get_preference($id) {
         $access_token = $this->get_access_token();
 
-        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::get("/preferences/?id=" . $id . "&access_token=" . $access_token);
+        $extra_params =  array('Authorization: ' . $access_token);
+        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::get("/order?id=" . $id, $extra_params);
         return $preference_result;
     }
 

@@ -111,7 +111,7 @@ class Status
         }
 
         //get the posible status update order
-        $statusToUpdate = $this->getStatusOrder($status, $statusDetail, false);
+        $statusToUpdate = $this->getStatusOrder($status);
         $order = $this->_coreHelper->_getOrder($notificationData["external_reference"]);
         $commentsObject = $order->getStatusHistoryCollection(true);
 
@@ -131,52 +131,33 @@ class Status
 //    }
 
     /**
-     * Return order status mapping based on current configuration
+     * Return order status based on admin configuration
      *
      * @param $status
      *
      * @return mixed
      */
-    public function getStatusOrder($status, $statusDetail, $isCanCreditMemo)
+    public function getStatusOrder($status)
     {
-//        switch ($status) {
-//            case 'approved': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_approved', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                if ($statusDetail == 'partially_refunded' && $isCanCreditMemo) {
-//                    $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_partially_refunded', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                }
-//                break;
-//            }
-//            case 'refunded': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_refunded', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                break;
-//            }
-//            case 'in_mediation': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_in_mediation', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                break;
-//            }
-//            case 'cancelled': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_cancelled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                break;
-//            }
-//            case 'rejected': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_rejected', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                break;
-//            }
-//            case 'chargeback': {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_chargeback', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//                break;
-//            }
-//            default: {
-//                $status = $this->scopeConfig->getValue('payment/mercadopago/order_status_in_process', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//            }
-//        }
+        switch ($status) {
+            case 'approved': {
+                $status = $this->scopeConfig->getValue('payment/wipei_wipeipayment/order_status_approved', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                break;
+            }
+            case 'cancelled': {
+                $status = $this->scopeConfig->getValue('payment/wipei_wipeipayment/order_status_cancelled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                break;
+            }
+            default: {
+                $status = $this->scopeConfig->getValue('payment/wipei_wipeipayment/order_status_pending', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            }
+        }
 
-        return 'complete';
+        return $status;
     }
 
     /**
-     * Get the assigned state of an order status
+     * Get the Magento assigned state of an order status
      *
      * @param string $status
      * @return string
@@ -347,7 +328,7 @@ class Status
       $data['external_reference'] = $payment['external_reference'];
       $data['order_id'] = $payment['id'];
       $data['total_paid_amount'] = $payment['total'];
-      $data['status'] = 'approved';
+      $data['status'] = $payment['status'];
       $data['status_detail'] = 'test ok';
 
       return $data;
@@ -357,7 +338,6 @@ class Status
      * Updates order status ond creates invoice
      *
      * @param      $payment
-     * @param null $stateObject
      *
      * @return array
      * @throws \Exception
@@ -445,7 +425,7 @@ class Status
     protected function _updateStatus($order, $status, $message, $statusDetail)
     {
         if ($order->getState() !== \Magento\Sales\Model\Order::STATE_COMPLETE) {
-            $statusOrder = $this->getStatusOrder($status, $statusDetail, $order->canCreditmemo());
+            $statusOrder = $this->getStatusOrder($status);
 //            $emailAlreadySent = false;
 //            //get scope config
 //            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();

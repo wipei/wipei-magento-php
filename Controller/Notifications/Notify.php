@@ -82,7 +82,6 @@ class Notify
         $response = $this->paymentModel->getPayment($paymentId);
         $payment = $response['response'];
 
-        // TODO: check this method
         return  $this->_statusHelper->formatArrayPayment($data, $payment, "payment");
     }
 
