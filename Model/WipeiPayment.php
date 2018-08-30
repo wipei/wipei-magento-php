@@ -440,6 +440,24 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     }
 
     /**
+     * Get payment info returned by api
+     *
+     * @param $payment_id
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getPaymentOrder($order_id)
+    {
+        $client_id = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_ID, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $client_secret = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_SECRET, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+        $api = $this->_helperData->getApiInstance($client_id, $client_secret);
+
+        return $api->get("/order_by_reference" . "?reference=" . $order_id);
+    }
+
+    /**
      * Get Magento order
      *
      * @param integer $incrementId
