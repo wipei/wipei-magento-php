@@ -32,12 +32,15 @@ class OrderUpdate
 
     const LOG_FILE = 'wipei-order-synchronized.log';
 
+    protected $_logger;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory,
         \Wipei\WipeiPayment\Helper\Status $statusUpdate,
         \Wipei\WipeiPayment\Helper\Data $helper,
         \Wipei\WipeiPayment\Model\WipeiPayment $core,
+        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
@@ -46,11 +49,14 @@ class OrderUpdate
         $this->_statusHelper = $statusUpdate;
         $this->_helper = $helper;
         $this->paymentModel = $core;
+        $this->_logger = $logger;
     }
 
     public function execute(){
+        $this->_logger->debug('Cron started successfully');
+
 //       $hours = $this->_scopeConfig->getValue('payment/wipei_wipeipayment/hours_number');
-        $hours = 12;
+        $hours = 1;
 
         // filter to date:
         $fromDate = date('Y-m-d H:i:s', strtotime('-'.$hours. ' hours'));
@@ -88,6 +94,7 @@ class OrderUpdate
                 }
             }
         }
+        $this->_logger->debug('Cron run successfully');
     }
 
     /**
@@ -103,7 +110,7 @@ class OrderUpdate
             $order->setState($this->_statusHelper->_getAssignedState($statusOrder));
         }
 
-        $order->addStatusToHistory($statusOrder, $this->_statusHelper->getMessage($statusOrder, $statusOrder), true);
+        $order->addStatusToHistory($statusOrder, $this->_statusHelper->getMessage($statusOrder), true);
         $order->save();
     }
 

@@ -145,10 +145,10 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         $api = $this->_helperData->getApiInstance($client_id, $client_secret);
 
         $pref = $this->makePreference();
-        //$this->_helperData->log("make array", 'mercadopago-standard.log', $pref);
+        $this->_helperData->log("Get order information", 'wipei.log', $pref);
 
         $response = $api->create_preference($pref);
-        //$this->_helperData->log("create preference result", 'mercadopago-standard.log', $response);
+        $this->_helperData->log("Create order on API", 'wipei.log', $response);
 
         if ($response['status'] == 200 || $response['status'] == 201) {
             $payment = $response['response'];
@@ -159,7 +159,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
                 "status"          => 201
             ];
 
-            //$this->_helperData->log("Array preference ok", 'mercadopago-standard.log');
+            $this->_helperData->log("Order creation on API ok", 'wipei.log');
         } else {
             $array_assign = [
                 "message" => __('An error has occurred. Please refresh the page.'),
@@ -167,16 +167,10 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
                 "status"  => 400
             ];
 
-            //$this->_helperData->log("Array preference error", 'mercadopago-standard.log');
+            $this->_helperData->log("Order creation on API error", 'wipei.log');
         }
 
         return $array_assign;
-
-//        $array_assign = [
-//            "message" => __('An error has occurred. Please refresh the page.'),
-//            "status"  => 400
-//        ];
-//        return $array_assign;
     }
 
     /**
@@ -186,19 +180,11 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
      */
     public function makePreference()
     {
-//        $arr = [];
-
         $orderIncrementId = $this->_checkoutSession->getLastRealOrderId();
         $order = $this->_orderFactory->create()->loadByIncrementId($orderIncrementId);
-        $customer = $this->_customerSession->getCustomer();
         $payment = $order->getPayment();
         $paramsShipment = new \Magento\Framework\DataObject();
         $paramsShipment->setParams([]);
-
-//        $this->_eventManager->dispatch(
-//            'mercadopago_standard_make_preference_before',
-//            ['params' => $paramsShipment, 'order' => $order]
-//        );
 
         $arr['external_reference'] = $orderIncrementId;
         $arr['items'] = $this->getItems($order);
@@ -217,33 +203,9 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
                 "quantity"  => 1,
                 "price"     => (float)$shipment_cost
             ]);
-            //$this->_helperData->log("Total itens: " . $total_item, 'mercadopago-standard.log');
-            //$this->_helperData->log("Total order: " . $order_amount, 'mercadopago-standard.log');
-            //$this->_helperData->log("Difference add itens: " . $diff_price, 'mercadopago-standard.log');
         }
-//        if ($order->canShip()) {
-//            $shippingAddress = $order->getShippingAddress();
-//            $shipping = $shippingAddress->getData();
-//
-//            $arr['payer']['phone'] = [
-//                "area_code" => "-",
-//                "number"    => $shipping['telephone']
-//            ];
-//
-//            $arr['shipments'] = $this->_getParamShipment($paramsShipment, $order, $shippingAddress);
-//        }
 
-//        $billingAddress = $order->getBillingAddress()->getData();
-//        $arr['payer']['date_created'] = date('Y-m-d', $customer->getCreatedAtTimestamp()) . "T" . date('H:i:s', $customer->getCreatedAtTimestamp());
-//        if (!$customer->getId()) {
-//            $arr['payer']['email'] = htmlentities($billingAddress['email']);
-//            $arr['payer']['first_name'] = htmlentities($billingAddress['firstname']);
-//            $arr['payer']['last_name'] = htmlentities($billingAddress['lastname']);
-//        } else {
-//            $arr['payer']['email'] = htmlentities($customer->getEmail());
-//            $arr['payer']['first_name'] = htmlentities($customer->getFirstname());
-//            $arr['payer']['last_name'] = htmlentities($customer->getLastname());
-//        }
+        $this->_helperData->log("Total: " . $order_amount, 'wipei.log');
 
         if (isset($payment['additional_information']['doc_number']) && $payment['additional_information']['doc_number'] != "") {
             $arr['payer']['identification'] = [
@@ -252,29 +214,12 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
             ];
         }
 
-//        $arr['payer']['address'] = [
-//            "zip_code"      => $billingAddress['postcode'],
-//            "street_name"   => $billingAddress['street'] . " - " . $billingAddress['city'] . " - " . $billingAddress['country_id'],
-//            "street_number" => ""
-//        ];
-
         $arr['url_success'] = $this->_urlBuilder->getUrl('checkout/onepage/success');
-        $arr['url_pending'] = $this->_urlBuilder->getCurrentUrl();
+        $arr['url_notify'] = $this->_urlBuilder->getUrl('wipeipayment/notifications/notify');
         $arr['url_failure'] = $this->_urlBuilder->getUrl('checkout/onepage/failure');
 
         return $arr;
     }
-
-//    protected function _getParamShipment($params, $order, $shippingAddress) {
-//        $paramsShipment = $params->getParams();
-//        if (empty($paramsShipment)) {
-//            $paramsShipment = $params->getData();
-//            $paramsShipment['cost'] = (float)$order->getBaseShippingAmount();
-//            $paramsShipment['mode'] = 'custom';
-//        }
-//        $paramsShipment['receiver_address'] = $this->getReceiverAddress($shippingAddress);
-//        return $paramsShipment;
-//    }
 
     /**
      * Return array with data of items of order
@@ -299,41 +244,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
 
         return $items;
     }
-//
-//    /**
-//     * Calculate discount of magento site and set data in arr param
-//     *
-//     * @param $arr
-//     * @param $order
-//     */
-//    protected function _calculateDiscountAmount(&$arr, $order)
-//    {
-//        if ($order->getDiscountAmount() < 0) {
-//            $arr[] = [
-//                "title"       => "Store discount coupon",
-//                "description" => "Store discount coupon",
-//                "quantity"    => 1,
-//                "unit_price"  => (float)$order->getDiscountAmount()
-//            ];
-//        }
-//    }
-//
-//    /**
-//     * @param $arr
-//     * @param $order
-//     */
-//    protected function _calculateBaseTaxAmount(&$arr, $order)
-//    {
-//        if ($order->getBaseTaxAmount() > 0) {
-//            $arr[] = [
-//                "title"       => "Store taxes",
-//                "description" => "Store taxes",
-//                "quantity"    => 1,
-//                "unit_price"  => (float)$order->getBaseTaxAmount()
-//            ];
-//        }
-//    }
-//
+
     /**
      * @return array
      */
@@ -369,14 +280,6 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         ];
     }
 
-//    /**
-//     * @return mixed
-//     */
-//    public function getBannerCheckoutUrl()
-//    {
-//        return $this->getConfigData('banner_checkout');
-//    }
-
     /**
      * @return string
      */
@@ -385,29 +288,6 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         return $this->_urlBuilder->getUrl(self::ACTION_URL);
     }
 
-//    /**
-//     * Check whether payment method can be used
-//     *
-//     * @param \Magento\Quote\Api\Data\CartInterface|null $quote
-//     *
-//     * @return bool
-//     * @throws \Exception
-//     */
-//    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
-//    {
-//        $parent = parent::isAvailable($quote);
-//        $clientId = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_ID, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//        $clientSecret = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_SECRET, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-//        $standard = (!empty($clientId) && !empty($clientSecret));
-//
-//        if (!$parent || !$standard) {
-//            return false;
-//        }
-//
-//        return $this->_helperData->isValidClientCredentials($clientId, $clientSecret);
-//
-//    }
-//
     /**
      * Return success page url
      *
@@ -415,7 +295,6 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
      */
     public function getOrderPlaceRedirectUrl()
     {
-//        $url = 'http://localhost/index.php/checkout/onepage/success';
         $url = $this->_helperData->getSuccessUrl();
 
         return $this->_urlBuilder->getUrl($url, ['_secure' => true]);

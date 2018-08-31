@@ -29,8 +29,7 @@ class Data extends \Magento\Payment\Helper\Data
      * @param \Magento\Store\Model\App\Emulation                   $appEmulation
      * @param \Magento\Payment\Model\Config                        $paymentConfig
      * @param \Magento\Framework\App\Config\Initial                $initialConfig
-     * @param \Magento\Sales\Model\ResourceModel\Status\Collection $statusFactory
-     * @param \Magento\Framework\Module\ResourceInterface          $moduleResource
+     * @param \Wipei\WipeiPayment\Logger\Logger                    $logger
      */
     public function __construct(
       \Magento\Framework\App\Helper\Context $context,
@@ -39,36 +38,52 @@ class Data extends \Magento\Payment\Helper\Data
       \Magento\Store\Model\App\Emulation $appEmulation,
       \Magento\Payment\Model\Config $paymentConfig,
       \Magento\Framework\App\Config\Initial $initialConfig,
-      \Magento\Sales\Model\ResourceModel\Status\Collection $statusFactory,
-      \Magento\Sales\Model\OrderFactory $orderFactory,
-      \Magento\Backend\Block\Store\Switcher $switcher,
-      \Magento\Framework\Composer\ComposerInformation $composerInformation,
-      \Magento\Framework\Module\ResourceInterface $moduleResource
+      \Wipei\WipeiPayment\Logger\Logger $logger
 
   )
   {
       parent::__construct($context, $layoutFactory, $paymentMethodFactory, $appEmulation, $paymentConfig, $initialConfig);
-      $this->_statusFactory = $statusFactory;
-      $this->_orderFactory = $orderFactory;
-      $this->_switcher = $switcher;
-      $this->_composerInformation = $composerInformation;
-      $this->_moduleResource = $moduleResource;
+      $this->_logger = $logger;
   }
 
+    /**
+     * Logger
+     *
+     * @param        $message
+     * @param string $name
+     * @param null   $array
+     */
+    public function log($message, $name = "wipei", $array = null)
+    {
+        // get log configuration value
+        $actionLog = $this->scopeConfig->getValue('payment/wipei_wipeipayment/logs', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        if (!$actionLog) {
+            return;
+        }
+
+        // if extra data is provided, it's encoded for better visualization
+        if (!is_null($array)) {
+            $message .= " - " . json_encode($array);
+        }
+
+        // set log
+        $this->_logger->setName($name);
+        $this->_logger->debug($message);
+    }
+
   /**
-   * Return Api instance given AccessToken or ClientId and Secret
+   * Return Api instance given ClientId and Secret
    *
    * @return \Wipei\WipeiPayment\Lib\Api
    * @throws \Exception
    */
-    public function getApiInstance($access_or_client_id = null, $client_secret = null) {
+    public function getApiInstance($client_id = null, $client_secret = null) {
 
-        if(is_null($access_or_client_id) && is_null($client_secret)){
-            throw new \Magento\Framework\Exception\LocalizedException(__('Invalid arguments. Use CLIENT_ID and CLIENT SECRET, or ACCESS_TOKEN'));
+        if(is_null($client_id) || is_null($client_secret)){
+            throw new \Magento\Framework\Exception\LocalizedException(__('Invalid CLIENT_ID and CLIENT_SECRET for Wipei.'));
         }
 
-        $api = new \Wipei\WipeiPayment\Lib\Api($access_or_client_id, $client_secret);
-        //$api->set_platform(self::PLATFORM_STD);
+        $api = new \Wipei\WipeiPayment\Lib\Api($client_id, $client_secret);
 
         $api->set_type(self::TYPE);
 
