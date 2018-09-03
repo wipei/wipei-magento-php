@@ -63,7 +63,7 @@ class Pay
         if ($array_assign['status'] != 400) {
             $resultRedirect->setUrl($array_assign['init_point']);
         } else {
-            $resultRedirect->setUrl($this->_urlBuilder->getUrl('checkout/onepage/failure'));
+            $resultRedirect->setUrl($this->_urlBuilder->getUrl('wipeipayment/standard/failure'));
         }
 
         return $resultRedirect;

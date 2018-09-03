@@ -67,11 +67,6 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     protected $_urlBuilder;
 
     /**
-     * @var string
-     */
-    // protected $_infoBlockType = 'MercadoPago\Core\Block\Info';
-
-    /**
      * @param \Wipei\WipeiPayment\Helper\Data                              $helperData
      * @param \Magento\Catalog\Helper\Image                                $helperImage
      * @param \Magento\Checkout\Model\Session                              $checkoutSession
@@ -139,35 +134,44 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
      */
     public function submitPayment()
     {
-        $client_id = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_ID, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        $client_secret = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_SECRET, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        try {
+            $client_id = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_ID, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            $client_secret = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_SECRET, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-        $api = $this->_helperData->getApiInstance($client_id, $client_secret);
+            $api = $this->_helperData->getApiInstance($client_id, $client_secret);
 
-        $pref = $this->makePreference();
-        $this->_helperData->log("Get order information", 'wipei.log', $pref);
+            $pref = $this->makePreference();
+            $this->_helperData->log("Prepare order to be sent", 'wipei.log', $pref);
 
-        $response = $api->create_preference($pref);
-        $this->_helperData->log("Create order on API", 'wipei.log', $response);
+            $response = $api->create_preference($pref);
+            $this->_helperData->log("Create order on API", 'wipei.log', $response['status']);
 
-        if ($response['status'] == 200 || $response['status'] == 201) {
-            $payment = $response['response'];
-            $init_point = $payment['init_point'];
+            if ($response['status'] == 200 || $response['status'] == 201) {
+                $payment = $response['response'];
+                $init_point = $payment['init_point'];
 
-            $array_assign = [
-                "init_point"      => $init_point,
-                "status"          => 201
-            ];
+                $array_assign = [
+                    "init_point"      => $init_point,
+                    "status"          => 201
+                ];
 
-            $this->_helperData->log("Order creation on API ok", 'wipei.log');
-        } else {
+                $this->_helperData->log("Order creation on API ok", 'wipei.log');
+            } else {
+                $array_assign = [
+                    "message" => __('An error has occurred. Please refresh the page.'),
+                    "json"    => json_encode($response),
+                    "status"  => 400
+                ];
+
+                $this->_helperData->log("Order creation on API error", 'wipei.log');
+            }
+        } catch (\Exception $e) {
             $array_assign = [
                 "message" => __('An error has occurred. Please refresh the page.'),
-                "json"    => json_encode($response),
                 "status"  => 400
             ];
 
-            $this->_helperData->log("Order creation on API error", 'wipei.log');
+            $this->_helperData->log("Order creation on API error", 'wipei.log', $e);
         }
 
         return $array_assign;
@@ -216,7 +220,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
 
         $arr['url_success'] = $this->_urlBuilder->getUrl('checkout/onepage/success');
         $arr['url_notify'] = $this->_urlBuilder->getUrl('wipeipayment/notifications/notify');
-        $arr['url_failure'] = $this->_urlBuilder->getUrl('checkout/onepage/failure');
+        $arr['url_failure'] = $this->_urlBuilder->getUrl('wipeipayment/standard/failure');
 
         return $arr;
     }
@@ -260,24 +264,6 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         }
 
         return $excludedMethods;
-    }
-
-    /**
-     * Return info of shipping address
-     *
-     * @param $shippingAddress
-     *
-     * @return array
-     */
-    protected function getReceiverAddress($shippingAddress)
-    {
-        return [
-            "floor"         => "-",
-            "zip_code"      => $shippingAddress->getPostcode(),
-            "street_name"   => $shippingAddress->getStreet()[0] . " - " . $shippingAddress->getCity() . " - " . $shippingAddress->getCountryId(),
-            "apartment"     => "-",
-            "street_number" => ""
-        ];
     }
 
     /**
@@ -346,6 +332,11 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     public function _getOrder($incrementId)
     {
         return $this->_orderFactory->create()->loadByIncrementId($incrementId);
+    }
+
+    public function getLastOrderId()
+    {
+        return $this->_checkoutSession->getLastRealOrderId();
     }
 
 }

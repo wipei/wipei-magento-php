@@ -1,12 +1,12 @@
 <?php
-namespace Wipei\WipeiPayment\Controller\Notifications;
+namespace Wipei\WipeiPayment\Controller\Standard;
 
 /**
  * Class Notify
  *
- * @package Wipei\WipeiPayment\Controller\Notifications
+ * @package Wipei\WipeiPayment\Controller\Standard
  */
-class Notify
+class Failure
     extends \Magento\Framework\App\Action\Action
 
 {
@@ -39,6 +39,11 @@ class Notify
     const LOG_NAME = 'wipei.log';
 
     /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    protected $_urlBuilder;
+
+    /**
      * Standard constructor.
      *
      * @param \Magento\Framework\App\Action\Context           $context
@@ -54,7 +59,8 @@ class Notify
         \Wipei\WipeiPayment\Helper\Data $dataHelper,
         \Wipei\WipeiPayment\Helper\Status $statusHelper,
         \Wipei\WipeiPayment\Model\WipeiPayment $paymentModel,
-        \Magento\Sales\Model\OrderFactory $orderFactory
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Framework\UrlInterface $urlBuilder
     )
     {
         $this->_paymentFactory = $paymentFactory;
@@ -62,6 +68,7 @@ class Notify
         $this->paymentModel = $paymentModel;
         $this->_orderFactory = $orderFactory;
         $this->_statusHelper = $statusHelper;
+        $this->_urlBuilder = $urlBuilder;
         parent::__construct($context);
     }
 
@@ -88,19 +95,12 @@ class Notify
     {
         $request = $this->getRequest();
         //notification received
-        $this->dataHelper->log("Notification received ", self::LOG_NAME, $request->getParams());
+        $this->dataHelper->log("Failed order ", self::LOG_NAME, $request->getParams());
 
-        $id = $request->getParam('id');
-        if (empty($id)) {
-            $this->dataHelper->log("Order id not found on request", self::LOG_NAME, $request->getParams());
-            $this->getResponse()->setBody("Order id not found on request");
-            $this->getResponse()->setHttpResponseCode(404);
-
-            return;
-        }
-
-        $data = $this->_getFormattedPaymentData($id);
-        $statusFinal = $data['status'];
+        $data['external_reference'] = $this->paymentModel->getLastOrderId();
+        $data['status'] = 'cancelled';
+        $data['status_detail'] = 'Order canceled due to wrong Wipei payment';
+        $data['order_id'] = 'none';
 
         $this->_order = $this->paymentModel->_getOrder($data['external_reference']);
 
@@ -112,38 +112,15 @@ class Notify
         $this->_statusHelper->setStatusUpdated($data, $this->_order);
         $this->_statusHelper->updateOrder($data, $this->_order);
 
-        if ($statusFinal != false) {
-            $data['status_final'] = $statusFinal;
-            $this->dataHelper->log("Received Payment data", self::LOG_NAME, $data);
-            $setStatusResponse = $this->_statusHelper->setStatusOrder($data);
-            $this->getResponse()->setBody($setStatusResponse['text']);
-            $this->getResponse()->setHttpResponseCode($setStatusResponse['code']);
-        } else {
-            $this->getResponse()->setBody("Status not final");
-            $this->getResponse()->setHttpResponseCode(200);
-        }
-
         $this->dataHelper->log("Http code", self::LOG_NAME, $this->getResponse()->getHttpResponseCode());
 
-    }
+        $resultRedirect = $this->resultRedirectFactory->create();
+        $resultRedirect->setUrl($this->_urlBuilder->getUrl('checkout/onepage/failure'));
 
-    /**
-     * Collect data from notification content
-     *
-     * @param $merchantOrder
-     *
-     * @return array
-     * @throws \Exception
-     */
-    protected function _getDataPayments($merchantOrder)
-    {
-        $data = array();
-        foreach ($merchantOrder['payments'] as $payment) {
-            $response = $this->paymentModel->getPayment($payment['id']);
-            $payment = $response['response'];
-            $data = $this->_statusHelper->formatArrayPayment($data, $payment, self::LOG_NAME);
-        }
-        return $data;
+        $data['status_final'] = $data['status'];
+        $this->_statusHelper->setStatusOrder($data);
+
+        return $resultRedirect;
     }
 
     protected function _orderExists()

@@ -23,22 +23,12 @@ define([
             },
 
             captureWipeiPayment: function() {
-                console.log(window.checkoutConfig);
-                if(window.confirm("Hola, vas a pagar?")) {
-                    this.placeOrder();
-                };
+                this.placeOrder();
                 return false;
             },
 
             redirectAfterPlaceOrder: false,
-            /*
-            initObservable: function () {
-                this._super()
-                    .observe('paymentReady');
 
-                return this;
-            },
-            */
             isPaymentReady: function () {
                 return this.paymentReady();
             },
