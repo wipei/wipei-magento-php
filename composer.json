@@ -12,7 +12,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/igorw/monolog"
+      "url": "https://github.com/Wolox/wipei-magento-php-1.git"
     }
   ]
 }
