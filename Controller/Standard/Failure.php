@@ -108,11 +108,9 @@ class Failure
             return;
         }
 
-        $this->dataHelper->log("Update Order", self::LOG_NAME);
+        $this->dataHelper->log("Update Order: cancel", self::LOG_NAME);
         $this->_statusHelper->setStatusUpdated($data, $this->_order);
         $this->_statusHelper->updateOrder($data, $this->_order);
-
-        $this->dataHelper->log("Http code", self::LOG_NAME, $this->getResponse()->getHttpResponseCode());
 
         $resultRedirect = $this->resultRedirectFactory->create();
         $resultRedirect->setUrl($this->_urlBuilder->getUrl('checkout/onepage/failure'));

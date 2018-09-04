@@ -8,5 +8,11 @@
     "psr-4": {
       "Wipei\\WipeiPayment\\": ""
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/igorw/monolog"
+    }
+  ]
 }

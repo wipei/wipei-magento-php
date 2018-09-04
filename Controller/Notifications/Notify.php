@@ -123,7 +123,7 @@ class Notify
             $this->getResponse()->setHttpResponseCode(200);
         }
 
-        $this->dataHelper->log("Http code", self::LOG_NAME, $this->getResponse()->getHttpResponseCode());
+        $this->dataHelper->log("Response to notification received: Http code", self::LOG_NAME, $this->getResponse()->getHttpResponseCode());
 
     }
 

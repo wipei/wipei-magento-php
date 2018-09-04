@@ -137,15 +137,12 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         try {
             $client_id = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_ID, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
             $client_secret = $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CLIENT_SECRET, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
             $api = $this->_helperData->getApiInstance($client_id, $client_secret);
 
             $pref = $this->makePreference();
             $this->_helperData->log("Prepare order to be sent", 'wipei.log', $pref);
 
             $response = $api->create_preference($pref);
-            $this->_helperData->log("Create order on API", 'wipei.log', $response['status']);
-
             if ($response['status'] == 200 || $response['status'] == 201) {
                 $payment = $response['response'];
                 $init_point = $payment['init_point'];
@@ -163,7 +160,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
                     "status"  => 400
                 ];
 
-                $this->_helperData->log("Order creation on API error", 'wipei.log');
+                $this->_helperData->log("Order creation on API error", 'wipei.log', $response);
             }
         } catch (\Exception $e) {
             $array_assign = [
@@ -180,7 +177,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     /**
      * Return array with data about the purchase to send to the api
      *
-     * @return array
+     * @return array $preference
      */
     public function makePreference()
     {
@@ -190,8 +187,11 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         $paramsShipment = new \Magento\Framework\DataObject();
         $paramsShipment->setParams([]);
 
-        $arr['external_reference'] = $orderIncrementId;
-        $arr['items'] = $this->getItems($order);
+        $preference['external_reference'] = $orderIncrementId;
+        $preference['items'] = $this->getItems($order);
+
+        $this->_addDiscounts($preference['items'], $order);
+        $this->_addTaxes($preference['items'], $order);
 
         $order_amount = (float)$order->getBaseGrandTotal();
         $shipment_cost = $order->getBaseShippingAmount();
@@ -199,10 +199,10 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         if (!$order_amount) {
             $order_amount = (float)$order->getBasePrice() + $shipment_cost;
         }
-        $arr['total'] = $order_amount;
+        $preference['total'] = $order_amount;
 
         if ($shipment_cost) {
-            array_push($arr['items'], [
+            array_push($preference['items'], [
                 "name"      => "Entrega",
                 "quantity"  => 1,
                 "price"     => (float)$shipment_cost
@@ -212,17 +212,17 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         $this->_helperData->log("Total: " . $order_amount, 'wipei.log');
 
         if (isset($payment['additional_information']['doc_number']) && $payment['additional_information']['doc_number'] != "") {
-            $arr['payer']['identification'] = [
+            $preference['payer']['identification'] = [
                 "type"   => "CPF",
                 "number" => $payment['additional_information']['doc_number']
             ];
         }
 
-        $arr['url_success'] = $this->_urlBuilder->getUrl('checkout/onepage/success');
-        $arr['url_notify'] = $this->_urlBuilder->getUrl('wipeipayment/notifications/notify');
-        $arr['url_failure'] = $this->_urlBuilder->getUrl('wipeipayment/standard/failure');
+        $preference['url_success'] = $this->_urlBuilder->getUrl('checkout/onepage/success');
+        $preference['url_notify'] = $this->_urlBuilder->getUrl('wipeipayment/notifications/notify');
+        $preference['url_failure'] = $this->_urlBuilder->getUrl('wipeipayment/standard/failure');
 
-        return $arr;
+        return $preference;
     }
 
     /**
@@ -247,6 +247,38 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
         }
 
         return $items;
+    }
+
+    /**
+     * @param $arr
+     * @param $order
+     */
+    protected function _addTaxes(&$arr, $order)
+    {
+        if ($order->getBaseTaxAmount() > 0) {
+            $arr[] = [
+                "name"       => "Impuestos",
+                "quantity"   => 1,
+                "price"      => (float)$order->getBaseTaxAmount()
+            ];
+        }
+    }
+
+    /**
+     * Calculate discount of magento site and set data in arr param
+     *
+     * @param $arr
+     * @param $order
+     */
+    protected function _addDiscounts(&$arr, $order)
+    {
+        if ($order->getDiscountAmount() < 0) {
+            $arr[] = [
+                "name"        => "Descuentos",
+                "quantity"    => 1,
+                "price"       => (float)$order->getDiscountAmount()
+            ];
+        }
     }
 
     /**
@@ -301,7 +333,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
 
         $api = $this->_helperData->getApiInstance($client_id, $client_secret);
 
-        return $api->get("/order" . "?order=" . $payment_id);
+        return $api->get("/order_store" . "?order=" . $payment_id);
     }
 
     /**

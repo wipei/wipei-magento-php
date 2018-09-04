@@ -1,7 +1,7 @@
 <?php
 namespace Wipei\WipeiPayment\Lib;
 /**
- * MercadoPago cURL RestClient
+ * curl RestClient
  */
 
 
@@ -23,7 +23,7 @@ class RestClient {
      */
     private static function get_connect($uri, $method, $content_type, $extra_params = array()) {
         if (!extension_loaded ("curl")) {
-            throw new \Exception("cURL extension not found. You need to enable cURL in your php.ini or any other configuration you have.");
+            throw new \Exception("curl extension not found. You need to enable cURL in your php.ini or any other configuration you have.");
         }
 
         $connect = curl_init(self::API_BASE_URL . $uri);
@@ -99,22 +99,7 @@ class RestClient {
             "response" => json_decode($api_result, true)
         );
 
-        /*if ($response['status'] >= 400) {
-            $message = $response['response']['message'];
-            if (isset ($response['response']['cause'])) {
-                if (isset ($response['response']['cause']['code']) && isset ($response['response']['cause']['description'])) {
-                    $message .= " - ".$response['response']['cause']['code'].': '.$response['response']['cause']['description'];
-                } else if (is_array ($response['response']['cause'])) {
-                    foreach ($response['response']['cause'] as $cause) {
-                        $message .= " - ".$cause['code'].': '.$cause['description'];
-                    }
-                }
-            }
-
-            throw new Exception ($message, $response['status']);
-        }*/
-
-      if ($response != null && $response['status'] >= 400 && self::$check_loop == 0) {
+    if ($response != null && $response['status'] >= 400 && self::$check_loop == 0) {
         try {
           self::$check_loop = 1;
           $message = null;
