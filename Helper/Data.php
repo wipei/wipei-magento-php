@@ -18,6 +18,7 @@ class Data extends \Magento\Payment\Helper\Data
    */
   const XML_PATH_CLIENT_ID = 'payment/wipei/client_id';
   const XML_PATH_CLIENT_SECRET = 'payment/wipei/client_secret';
+  const XML_PATH_CHECKOUT_TYPE = 'payment/wipei/checkout_type';
   const TYPE = 'magento';
 
   /**
