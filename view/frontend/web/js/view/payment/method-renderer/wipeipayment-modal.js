@@ -67,14 +67,13 @@ define([
                     document.addEventListener('click', iframe.stopEventPropagation, true);
                 }
             },
-
             /**
              * Hide loader when iframe is fully loaded.
              * @returns {void}
              */
             iframeLoaded: function () {
                 fullScreenLoader.stopLoader();
-            },
+            }
         });
     }
 );

@@ -24,10 +24,18 @@
         </div>
         <div class="actions-toolbar" data-bind="visible: !isInAction()">
             <div class="primary">
-                <button data-role="review-save" type="submit" data-modal="https://www.google.com/maps/d/embed?mid=zA9_X1Tfn01s.kNe-p7G1WCjk" class="button action primary checkout">
+                <button data-role="review-save" type="submit" data-bind="click: placePendingPaymentOrder, attr: {title: $t('Continue')}, css: {disabled: !isPlaceOrderActionAllowed()}" class="button action primary checkout">
                     <span data-bind="i18n: 'Continue'"></span>
                 </button>
             </div>
+        </div>
+        <div data-bind="visible: isInAction()">
+            <div id="iframe-warning" class="message notice">
+                <div><!-- ko i18n: 'Please do not refresh the page until you complete payment.' --><!-- /ko --></div>
+            </div>
+            <!-- ko if: isPaymentReady() -->
+            <iframe data-bind="attr: {height:getConfigHeight(), id: getCode() + '-iframe', src: getActionUrl()}, event: {load: iframeLoaded}" data-container="standard-iframe" class="iframe" scrolling="no" frameborder="0" border="0" width="100%"></iframe>
+            <!-- /ko -->
         </div>
     </div>
 </div>
