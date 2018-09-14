@@ -111,14 +111,4 @@ class Data extends \Magento\Payment\Helper\Data
 
         return true;
     }
-
-    /**
-     * Return success url
-     *
-     * @return string
-     */
-    public function getSuccessUrl()
-    {
-        return 'checkout/onepage/success';
-    }
 }

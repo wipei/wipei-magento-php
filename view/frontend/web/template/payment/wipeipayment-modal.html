@@ -34,7 +34,7 @@
                 <div><!-- ko i18n: 'Please do not refresh the page until you complete payment.' --><!-- /ko --></div>
             </div>
             <!-- ko if: isPaymentReady() -->
-            <iframe data-bind="attr: {height:getConfigHeight(), id: getCode() + '-iframe', src: getActionUrl()}, event: {load: iframeLoaded}" data-container="standard-iframe" class="iframe" scrolling="no" frameborder="0" border="0" width="100%"></iframe>
+            <iframe data-bind="attr: {height:getConfigHeight(), id: getCode() + '-iframe', src: getActionUrl()}, event: {load: iframeLoaded}" data-container="standard-iframe" class="iframe" scrolling="no" frameborder="0" border="0" width="100%" position="fixed" top="0" left="0" z-index="999"></iframe>
             <!-- /ko -->
         </div>
     </div>

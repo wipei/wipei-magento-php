@@ -58,14 +58,29 @@ class Pay
         // Payment information sent to Wipei server to obtain token for app
         $array_assign = $standard->submitPayment();
         $resultRedirect = $this->resultRedirectFactory->create();
+
+        $checkoutType = $this->_scopeConfig->getValue('payment/wipei/checkout_type', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         
         // URL set up, according to answer and admin configuration
         if ($array_assign['status'] != 400) {
-            $resultRedirect->setUrl($array_assign['init_point']);
+            $resultRedirect->setUrl($array_assign['init_point'] . $this->addCheckoutType($checkoutType));
         } else {
-            $resultRedirect->setUrl($this->_urlBuilder->getUrl('wipeipayment/standard/failure'));
+            if ($checkoutType == 'modal') {
+                $resultRedirect->setUrl($this->_urlBuilder->getUrl(''));
+            } else {
+                $resultRedirect->setUrl($this->_urlBuilder->getUrl('wipeipayment/standard/failure'));
+            }
         }
 
         return $resultRedirect;
+    }
+
+    /**
+     * @param $checkoutType
+     * @return string
+     */
+    public function addCheckoutType($checkoutType)
+    {
+        return $checkoutType == 'modal' ? '&iframe=true' : '&iframe=false';
     }
 }

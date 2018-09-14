@@ -5,8 +5,6 @@ namespace Wipei\WipeiPayment\Model;
 /**
  * Class Payment
  *
- * TODO: Configure logs
- *
  * @package WipeiPayment\Model\
  */
 class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
@@ -17,9 +15,24 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     const CODE = 'wipei_wipeipayment';
 
     /**
+     * define URL to go when an order is cancelled
+     */
+    const FAILURE_ACTION_URL = 'wipeipayment/standard/failure';
+
+    /**
      * define URL to go when an order is placed
      */
     const ACTION_URL = 'wipeipayment/standard/pay';
+
+    /**
+     * define URL to go when an order fail
+     */
+    const FAILURE_URL = 'checkout/onepage/failure';
+
+    /**
+     * define URL to go when an order success
+     */
+    const SUCCESS_URL = 'checkout/onepage/success';
 
     /**
      * {@inheritdoc}
@@ -218,9 +231,9 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
             ];
         }
 
-        $preference['url_success'] = $this->_urlBuilder->getUrl('checkout/onepage/success');
+        $preference['url_success'] = $this->getSuccessUrl();
         $preference['url_notify'] = $this->_urlBuilder->getUrl('wipeipayment/notifications/notify');
-        $preference['url_failure'] = $this->_urlBuilder->getUrl('wipeipayment/standard/failure');
+        $preference['url_failure'] = $this->getFailureActionUrl();
 
         return $preference;
     }
@@ -307,15 +320,27 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
     }
 
     /**
-     * Return success page url
-     *
      * @return string
      */
-    public function getOrderPlaceRedirectUrl()
+    public function getFailureActionUrl()
     {
-        $url = $this->_helperData->getSuccessUrl();
+        return $this->_urlBuilder->getUrl(self::FAILURE_ACTION_URL);
+    }
 
-        return $this->_urlBuilder->getUrl($url, ['_secure' => true]);
+    /**
+     * @return string
+     */
+    public function getFailureUrl()
+    {
+        return $this->_urlBuilder->getUrl(self::FAILURE_URL);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSuccessUrl()
+    {
+        return $this->_urlBuilder->getUrl(self::SUCCESS_URL);
     }
 
     /**

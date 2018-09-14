@@ -50,6 +50,8 @@ class ConfigProvider
                 'payment' => [
                     $this->methodCode => [
                         'actionUrl'     => $this->methodInstance->getActionUrl(),
+                        'failureUrl'     => $this->methodInstance->getFailureActionUrl(),
+                        'successUrl'     => $this->methodInstance->getSuccessUrl(),
                         'logoUrl'       => '',
                         'checkout_type' => $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CHECKOUT_TYPE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE)
                     ],

@@ -61,12 +61,42 @@ define([
                 this.afterPlaceOrder = function () {
                     self.paymentReady(true);
                 };
+                function bindEvent(element, eventName, eventHandler) {
+                    if (element.addEventListener){
+                        element.addEventListener(eventName, eventHandler, false);
+                    } else if (element.attachEvent) {
+                        element.attachEvent('on' + eventName, eventHandler);
+                    }
+                }
                 if (this.placeOrder()) {
                     this.isInAction(true);
                     // capture all click events
                     document.addEventListener('click', iframe.stopEventPropagation, true);
+                    // addEventListener support for IE8
+                    bindEvent(window, 'message', self.modalClose);
                 }
             },
+
+            /**
+             * receive the modal closing message.
+             */
+            modalClose: function (event) {
+                function getSuccessUrl() {
+                    if (window.checkoutConfig.payment['wipei_wipeipayment'] != undefined) {
+                        return window.checkoutConfig.payment['wipei_wipeipayment']['successUrl'];
+                    }
+                    return '';
+                }
+                function getFailureUrl() {
+                    if (window.checkoutConfig.payment['wipei_wipeipayment'] != undefined) {
+                        return window.checkoutConfig.payment['wipei_wipeipayment']['failureUrl'];
+                    }
+                    return '';
+                }
+                if (event.data === 'success') window.location = getSuccessUrl()
+                else if (event.data === 'close') window.location = getFailureUrl();
+            },
+
             /**
              * Hide loader when iframe is fully loaded.
              * @returns {void}
