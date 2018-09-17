@@ -66,7 +66,7 @@ class Pay
             $resultRedirect->setUrl($array_assign['init_point'] . $this->addCheckoutType($checkoutType));
         } else {
             if ($checkoutType == 'modal') {
-                $resultRedirect->setUrl($this->_urlBuilder->getUrl(''));
+                $resultRedirect->setUrl($this->_urlBuilder->getUrl('wipeipayment/standard/iframefailure'));
             } else {
                 $resultRedirect->setUrl($this->_urlBuilder->getUrl('wipeipayment/standard/failure'));
             }

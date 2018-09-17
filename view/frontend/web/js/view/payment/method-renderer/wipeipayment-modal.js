@@ -46,14 +46,6 @@ define([
             },
 
             /**
-             * Get height iframne configured
-             * @returns {String}
-             */
-            getConfigHeight: function () {
-                return 710;
-            },
-
-            /**
              * Places order in pending payment status.
              */
             placePendingPaymentOrder: function () {
