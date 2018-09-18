@@ -11,11 +11,6 @@ class Failure
 
 {
     /**
-     * @var \Wipei\WipeiPayment\Model\WipeiPaymentFactory
-     */
-    protected $_paymentFactory;
-
-    /**
      * @var \Wipei\WipeiPayment\Helper\Data
      */
     protected $dataHelper;
@@ -25,10 +20,6 @@ class Failure
      */
     protected $paymentModel;
 
-    /**
-     * @var \Magento\Sales\Model\OrderFactory
-     */
-    protected $_orderFactory;
 
     /**
      * @var \Wipei\WipeiPayment\Helper\Status
@@ -47,45 +38,24 @@ class Failure
      * Standard constructor.
      *
      * @param \Magento\Framework\App\Action\Context           $context
-     * @param \Wipei\WipeiPayment\Model\WipeiPaymentFactory   $paymentFactory
      * @param \Wipei\WipeiPayment\Helper\Data                 $dataHelper
      * @param \Wipei\WipeiPayment\Model\WipeiPayment          $paymentModel
-     * @param \Magento\Sales\Model\OrderFactory               $orderFactory
+     * @param \Magento\Framework\UrlInterface                 $urlBuilder
      * @param \Wipei\WipeiPayment\Helper\Status               $statusHelper
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Wipei\WipeiPayment\Model\WipeiPaymentFactory $paymentFactory,
         \Wipei\WipeiPayment\Helper\Data $dataHelper,
         \Wipei\WipeiPayment\Helper\Status $statusHelper,
         \Wipei\WipeiPayment\Model\WipeiPayment $paymentModel,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\UrlInterface $urlBuilder
     )
     {
-        $this->_paymentFactory = $paymentFactory;
         $this->dataHelper = $dataHelper;
         $this->paymentModel = $paymentModel;
-        $this->_orderFactory = $orderFactory;
         $this->_statusHelper = $statusHelper;
         $this->_urlBuilder = $urlBuilder;
         parent::__construct($context);
-    }
-
-    protected function _isValidResponse($response)
-    {
-        return ($response['status'] == 200 || $response['status'] == 201);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    protected function _getFormattedPaymentData($paymentId, $data = [])
-    {
-        $response = $this->paymentModel->getPayment($paymentId);
-        $payment = $response['response'];
-
-        return  $this->_statusHelper->formatArrayPayment($data, $payment, self::LOG_NAME);
     }
 
     /**
@@ -113,7 +83,7 @@ class Failure
         $this->_statusHelper->updateOrder($data, $this->_order);
 
         $resultRedirect = $this->resultRedirectFactory->create();
-        $resultRedirect->setUrl($this->_urlBuilder->getUrl('checkout/onepage/failure'));
+        $resultRedirect->setUrl($this->paymentModel->getFailureUrl());
 
         $data['status_final'] = $data['status'];
         $this->_statusHelper->setStatusOrder($data);

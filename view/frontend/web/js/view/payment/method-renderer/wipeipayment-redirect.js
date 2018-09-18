@@ -1,13 +1,12 @@
 define([
-        'jquery',
         'Magento_Checkout/js/view/payment/default'
     ],
-    function ($, Component) {
+    function (Component) {
         'use strict';
 
         return Component.extend({
             defaults: {
-                template: 'Wipei_WipeiPayment/payment/wipeipayment'
+                template: 'Wipei_WipeiPayment/payment/wipeipayment-redirect'
             },
 
             context: function() {

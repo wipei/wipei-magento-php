@@ -25,11 +25,17 @@
 					<label>Client Secret</label>
 					<config_path>payment/wipei/client_secret</config_path>
 				</field>
-				<field id="logs" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+				<field id="checkout_type" translate="label" type="select" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Checkout Type</label>
+					<source_model>Wipei\WipeiPayment\Model\System\Config\Source\CheckoutType</source_model>
+					<config_path>payment/wipei/checkout_type</config_path>
+				</field>
+				<field id="logs" translate="label" type="select" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
 					<label>Logs</label>
 					<comment>Enable logs to analyse activity</comment>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
+
 
 				<field id="heading_order_status" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1">
 					<label>Order Status Options</label>

@@ -8,7 +8,6 @@
 				<model>Wipei\WipeiPayment\Model\WipeiPayment</model>
 				<order_status>pending</order_status>
 				<allowspecific>0</allowspecific>
-				<sort_order>-2</sort_order>
 				<logs>1</logs>
 				<installments>24</installments>
 				<auto_return>1</auto_return>

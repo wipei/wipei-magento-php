@@ -22,15 +22,19 @@ class ConfigProvider
      */
     protected $methodCode = WipeiPayment::CODE;
 
+    protected $_scopeConfig;
+
     /**
-     * @param \Magento\Payment\Helper\Data $paymentHelper
+     * @param  \Magento\Payment\Helper\Data $paymentHelper
+     * @param  \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function __construct(
-        \Magento\Payment\Helper\Data $paymentHelper
-    )
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Payment\Helper\Data $paymentHelper)
     {
         $this->methodInstance = $paymentHelper->getMethodInstance($this->methodCode);
+        $this->_scopeConfig = $scopeConfig;
     }
 
     /**
@@ -45,7 +49,11 @@ class ConfigProvider
             $config = [
                 'payment' => [
                     $this->methodCode => [
-                        'actionUrl' => $this->methodInstance->getActionUrl()
+                        'actionUrl'     => $this->methodInstance->getActionUrl(),
+                        'failureUrl'     => $this->methodInstance->getFailureActionUrl(),
+                        'successUrl'     => $this->methodInstance->getSuccessUrl(),
+                        'logoUrl'       => '',
+                        'checkout_type' => $this->_scopeConfig->getValue(\Wipei\WipeiPayment\Helper\Data::XML_PATH_CHECKOUT_TYPE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE)
                     ],
                 ],
             ];
