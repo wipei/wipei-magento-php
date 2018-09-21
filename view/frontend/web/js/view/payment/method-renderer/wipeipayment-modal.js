@@ -35,17 +35,6 @@ define([
             },
 
             /**
-             * Get url to logo
-             * @returns {String}
-             */
-            getLogoUrl: function () {
-                if (window.checkoutConfig.payment['wipei_wipeipayment'] != undefined) {
-                    return window.checkoutConfig.payment['wipei_wipeipayment']['logoUrl'];
-                }
-                return '';
-            },
-
-            /**
              * Places order in pending payment status.
              */
             placePendingPaymentOrder: function () {
