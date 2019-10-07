@@ -36,7 +36,12 @@ Este módulo permite el uso del método de pago Wipei para cualquier tienda Mage
   - Probado en versión 2.2.x
 
 ### Instalación
-El módulo debe sera agregado en ./app/code/ y habilitado.
+El módulo debe sera agregado en ./app/code/Wipei/WipeiPayment y habilitarlo
+
+module:enable ...
+setup:upgrade
+setup:di:compile
+cache:clean
 
 ### Configuración
 Luego de la instalación del módulo, se lo debe configurar. Para hacer esto, un administrador tiene que ir a:
