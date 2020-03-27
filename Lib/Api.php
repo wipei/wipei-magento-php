@@ -114,7 +114,7 @@ class Api {
         $access_token = $this->get_access_token();
 
         $extra_params =  array('Authorization: ' . $access_token);
-        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::get("/order?id=" . $id, $extra_params);
+        $preference_result = \Wipei\WipeiPayment\Lib\RestClient::get("/order?id=" . $id,null, $extra_params);
         return $preference_result;
     }
 
@@ -141,8 +141,9 @@ class Api {
             $uri .= (strpos($uri, "?") === false) ? "?" : "&";
             $uri .= $this->build_query($params);
         }
+        $extra_params =  array('Authorization: ' . $access_token);
 
-        $result = \Wipei\WipeiPayment\Lib\RestClient::get($uri);
+        $result = \Wipei\WipeiPayment\Lib\RestClient::get($uri, null, $extra_params);
         return $result;
     }
 
