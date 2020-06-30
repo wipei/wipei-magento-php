@@ -181,7 +181,7 @@ class WipeiPayment extends \Magento\Payment\Model\Method\AbstractMethod {
                 "status"  => 400
             ];
 
-            $this->_helperData->log("Order creation on API error", 'wipei.log', $e);
+            $this->_helperData->log("Order creation on API error exception", 'wipei.log', $e);
         }
 
         return $array_assign;
