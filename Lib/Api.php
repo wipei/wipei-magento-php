@@ -51,9 +51,7 @@ class Api {
      * @throws
      */
     public function __construct(
-        \Wipei\WipeiPayment\Helper\Data $helperData
     ) {
-        $this->_helperData = $helperData;
         $i = func_num_args();
 
         if ($i > 2 || $i < 1) {
@@ -75,6 +73,8 @@ class Api {
      * @throws
      */
     public function get_access_token() {
+        $this->_helperData->log("setting access token::", 'wipei.log');
+
         if (isset ($this->ll_access_token) && !is_null($this->ll_access_token)) {
             $this->_helperData->log("Access Token already set::", 'wipei.log');
             return $this->ll_access_token;
@@ -105,12 +105,17 @@ class Api {
      * @throws
      */
     public function create_preference($preference) {
-        
+        $this->_helperData->log("get access token::", 'wipei.log');
+
         $access_token = $this->get_access_token();
         $this->_helperData->log("Access Token created::", 'wipei.log', $access_token);
 
         $extra_params =  array('platform: ' . $this->_platform, 'so;', 'type: ' .  $this->_type, 'Authorization: ' . $access_token);
+        $this->_helperData->log("With extra params::", 'wipei.log', $extra_params);
+
         $preference_result = \Wipei\WipeiPayment\Lib\RestClient::post("/order", $preference, "application/json", $extra_params);
+        $this->_helperData->log("Preference result::", 'wipei.log', $preference_result);
+
         return $preference_result;
     }
 
@@ -269,6 +274,16 @@ class Api {
     {
         $this->_type = $type;
     }
+
+    /**
+     * @param null $type
+     */
+    public function set_log($helperData)
+    {
+        $this->_helperData = $helperData;
+    }
+
+    
 
 }
 

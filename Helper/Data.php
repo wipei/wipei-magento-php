@@ -87,7 +87,7 @@ class Data extends \Magento\Payment\Helper\Data
         $api = new \Wipei\WipeiPayment\Lib\Api($client_id, $client_secret);
 
         $api->set_type(self::TYPE);
-
+        $api->set_log($this);
         return $api;
     }
 
