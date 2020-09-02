@@ -1,0 +1,11 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="mail_observer_after_order_place" instance="Wipei\WipeiPayment\Observer\MailObserver" />
+    </event>
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="checkout_controller_success_action" instance="Wipei\WipeiPayment\Observer\AfterSuccessOrderObserver"  />
+    </event>
+    <!-- <event name="sales_order_place_before">
+        <observer name="MailObserver" instance="Wipei\WipeiPayment\Observer\MailObserver" />
+    </event> -->
+</config>

@@ -10,7 +10,7 @@ class RestClient {
     /**
      *API URL
      */
-    const API_BASE_URL = "https://api.wipei.com.ar";
+    const API_BASE_URL = "https://api-dev.wipei.com.ar";
 
     /**
      * @param       $uri

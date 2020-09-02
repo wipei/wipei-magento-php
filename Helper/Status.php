@@ -53,6 +53,7 @@ class Status
         \Wipei\WipeiPayment\Helper\Data $dataHelper,
         \Wipei\WipeiPayment\Model\WipeiPayment $coreHelper,
         \Magento\Framework\DB\TransactionFactory $transactionFactory,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
     )
@@ -63,6 +64,7 @@ class Status
         $this->_dataHelper = $dataHelper;
         $this->_coreHelper = $coreHelper;
         $this->_transactionFactory = $transactionFactory;
+        $this->_invoiceService = $invoiceService;
         $this->_invoiceSender = $invoiceSender;
         $this->_orderSender = $orderSender;
     }
@@ -238,13 +240,47 @@ class Status
             if($statusOrder == 'canceled'){
                 $order->cancel();
             }else{
-                $order->setState($this->_getAssignedState($statusOrder));
+                $magentoState = $this->_getAssignedState($statusOrder);
+                $order->setState($magentoState);
+                if ($magentoState === \Magento\Sales\Model\Order::STATE_COMPLETE){
+                    $this->createInvoice($order);
+                }
+
             }
 
             //add comment to history
             $order->addStatusToHistory($statusOrder, $message, true);
         }
     }
+
+
+    /**
+     * Create Invoice for order
+     * @param $order        \Magento\Sales\Model\Order
+     */
+    public function createInvoice($order)
+    {
+        try {
+            if (!$order->canInvoice()) {
+                return null;
+            }
+
+            $invoice = $this->_invoiceService->prepareInvoice($order);
+            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+            $invoice->register();
+
+            $transaction = $this->_transactionFactory->create()
+                ->addObject($invoice)
+                ->addObject($invoice->getOrder());
+
+            $transaction->save();
+        } catch (\Exception $e) {
+            $order->addStatusHistoryComment('Exception message: ' . $e->getMessage(), false);
+            $order->save();
+            return null;
+        }
+    }
+
 
     /**
      * Set order and payment info
