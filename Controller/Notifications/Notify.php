@@ -102,6 +102,8 @@ class Notify
         $data = $this->_getFormattedPaymentData($id);
         $statusFinal = $data['status'];
 
+        $this->dataHelper->log($statusFinal, self::LOG_NAME, $data);
+
         $this->_order = $this->paymentModel->_getOrder($data['external_reference']);
 
         if (!$this->_orderExists() || $this->_order->getStatus() == 'canceled') {

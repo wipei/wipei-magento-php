@@ -242,9 +242,13 @@ class Status
             }else{
                 $magentoState = $this->_getAssignedState($statusOrder);
                 $order->setState($magentoState);
-                if ($magentoState === \Magento\Sales\Model\Order::STATE_COMPLETE){
+                if ($status === "approved"){
+                    $this->_dataHelper->log("Order Approved - Creating invoice", 'wipei.log');
                     $this->createInvoice($order);
                 }
+                // if ($magentoState === \Magento\Sales\Model\Order::STATE_COMPLETE){
+                //     $this->createInvoice($order);
+                // }
 
             }
 

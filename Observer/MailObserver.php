@@ -20,7 +20,7 @@ class MailObserver implements ObserverInterface
 
     $order = $observer->getEvent()->getOrder();
     $payment = $order->getPayment()->getMethod();
-    $this->_logger->info($payment);
+    // $this->_logger->info($payment);
 
     if ($payment == 'wipei_wipeipayment') {
       $this->_logger->info('wipei_wipeipayment - Disabling Email Send');
